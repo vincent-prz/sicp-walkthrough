@@ -126,7 +126,6 @@
             (even? k) (* 2 y)
             :else (* 4 y)
           )))
-  (defn inc [k] (+ k 1))
   (* (/ h 3) (sum term 0 inc n))
   )
 
@@ -152,8 +151,6 @@
     (* (factor a) (product factor (next-val a) next-val b))
     )
   )
-
-(defn inc [x] (+ x 1))
 
 (defn factorial [n] (product identity 1 inc n))
 
@@ -230,3 +227,28 @@
   (defn prime-with? [i] (= (gcd i n) 1))
   (filtered-accumulate * 1 identity 2 inc n prime-with?)
   )
+
+;; 1.34
+;; (f f) evaluates to (2 2), and hences crashes
+
+;; 1.35
+
+(def tolerance 0.00001)
+
+;; FIXME: using Math/abs doesn't work
+(defn abs [x] (if (pos? x) x (- x)))
+
+(defn fixed-point
+  [f first-guess]
+  (defn close-enough? [v1 v2] (< (abs (- v1 v2)) tolerance))
+  (defn try-it [guess]
+    (let [next-guess (f guess)]
+      (if (close-enough? guess next-guess)
+        next-guess
+        (try-it next-guess)
+        )
+     ))
+  (try-it first-guess)
+  )
+
+(def golden-ratio (fixed-point (fn [x] (+ 1 (/ 1 x))) 1))
