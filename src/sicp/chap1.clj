@@ -252,3 +252,193 @@
   )
 
 (def golden-ratio (fixed-point (fn [x] (+ 1 (/ 1 x))) 1))
+
+;; 1.36
+
+(defn fixed-point-with-log
+  [f first-guess]
+  (defn close-enough? [v1 v2] (< (abs (- v1 v2)) tolerance))
+  (defn try-it [guess]
+    (let [next-guess (f guess)]
+      (println (float next-guess))
+      (if (close-enough? guess next-guess)
+        next-guess
+        (try-it next-guess)
+        )
+      ))
+  (try-it first-guess)
+  )
+
+(def sol
+  (fixed-point-with-log
+   (fn [x] (/ (Math/log 1000) (Math/log x)))
+   1.2
+   ))
+
+;; TODO: use Math/average
+(defn average [x y] (/ (+ x y) 2))
+
+(def sol-with-average-damping
+  (fixed-point-with-log
+   (fn [x] (average x (/ (Math/log 1000) (Math/log x))))
+   1.2
+   ))
+
+;; 1.37
+
+(defn cont-frac
+  [n d k]
+  (defn rec
+    [j]
+    (if (< j k)
+      (/ (n j) (+ (d j) (rec (inc j))))
+      (/ (n k) (d k))
+      ))
+  (rec 1))
+
+(defn cont-frac-iter
+  [n d k]
+  (defn iter
+    [j result]
+    (if (> j 0)
+      (iter (dec j)
+           (/ (n j) (+ (d j) result)))
+      result
+      ))
+  (iter k 0))
+
+(defn find-nb-steps-required
+  []
+  (defn golden-ratio-approx
+    [k]
+    (/ 1 (cont-frac (fn [x] 1) (fn [x] 1) k))
+    )
+  (defn try-it
+    [k]
+    (if (< (abs (- (golden-ratio-approx k) golden-ratio)) 0.0001)
+      k
+      (try-it (inc k))
+      )
+    )
+  (try-it 1)
+  )
+
+;; 1.38
+
+(defn e-approx
+  [k]
+  (defn denum
+    [i]
+    (if (= (mod i 3) 2)
+      (* (/ (inc i) 3) 2)
+      1))
+  (+ (cont-frac-iter (fn [x] 1.0) denum k) 2))
+
+;; 1.39
+
+(defn tan-cf
+  [x k]
+  (cont-frac
+   (fn [j] (if (= j 1) x (- (square x))))
+   (fn [j] (- (* 2 j) 1))
+   k))
+
+;; 1.40
+
+(defn deriv
+  [f]
+  (fn [x]
+    (let [dx 0.00001]
+      (/ (- (f (+ x dx)) (f x)) dx)
+      )
+    )
+ )
+
+(defn newton-transform
+  [f]
+  (fn [x]
+    (- x (/ (f x) ((deriv f) x)))
+    )
+  )
+
+(defn newtons-method
+  [f guess]
+  (fixed-point (newton-transform f) guess)
+  )
+
+(defn cubic
+  [a b c]
+  (fn [x]
+    (+ (cube x) (* a (square x)) (* b x) c)
+    )
+  )
+
+;; 1.41
+
+(defn apply-double
+  [f]
+  (fn [x] (f (f x)))
+  )
+
+;; 1.42
+
+(defn compose
+  [f g]
+  (fn [x] (f (g x)))
+  )
+
+;; 1.43
+
+(defn repeated
+  [f n]
+  (if (= n 0)
+    identity
+    (compose f (repeated f (dec n)))
+    )
+  )
+
+;; 1.44
+
+(defn smooth
+  [f]
+  (fn [x]
+    (let [dx 0.00001]
+      (/ (+
+          (f (- x dx))
+          (f x)
+          (f (+ x dx)))
+         3
+         )
+      ))
+  )
+
+;; 1.45 TODO
+
+;; 1.46
+(defn iterative-improve
+  [good-enough? improve-guess]
+  (fn [initial-guess]
+    (defn rec
+      [guess]
+      (if (good-enough? guess)
+        guess
+        (rec (improve-guess guess))
+
+      )
+    )
+    (rec initial-guess)
+  ))
+
+(defn sqrt2
+  [x]
+  ((iterative-improve
+    (fn [guess] (< (abs (- (square guess) x)) 0.001))
+    (fn [guess] (average guess (/ x guess)))
+  ) 1.0))
+
+(defn fixed-point2
+  [f first-guess]
+  ((iterative-improve
+    (fn [guess] (< (abs (- (f guess) guess)) tolerance))
+    f
+    ) first-guess))
