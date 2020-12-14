@@ -104,3 +104,46 @@
 ;; and would allow us to have perimter and area procedures which work independently
 ;; of the underlying rect implementation
 ;; (ex of alternative implementation: 3 points)
+
+;; 2.4
+
+(defn cdr [z] (z (fn [p q] q)))
+
+;; 2.5
+;; it works because of unicity of prime decomposition
+
+(defn make-pair
+  [a b]
+  (int (* (Math/pow 2 a) (Math/pow 3 b)))
+  )
+
+(defn extract-prime-factor
+  [n p]
+  (defn iter
+   [q result]
+   (if (= (mod q p) 0)
+     (iter (/ q p) (inc result))
+     result
+     ))
+  (iter n 0)
+  )
+
+(defn two-pair [p] (extract-prime-factor p 2))
+(defn three-pair [p] (extract-prime-factor p 3))
+
+;; 2.6
+
+(def church-zero (fn [f] (fn [x] x)))
+
+(defn church-add1 [n]
+  (fn [f] (fn [x] (f (n f) x)))
+  )
+
+(def church-one (church-add1 church-zero))
+(def church-two (church-add1 church-one))
+(defn church-add [m n]
+  (fn [f]
+    (fn [x] (m f ((n f) x))
+      )
+    )
+  )
