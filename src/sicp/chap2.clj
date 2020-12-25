@@ -147,3 +147,63 @@
       )
     )
   )
+
+;; 2.7
+
+(defn make-interval [a b] (list a b))
+(defn lower-bound [x] (first x))
+(defn upper-bound [x] (nth x 1))
+
+;; 2.8
+
+(defn sub-interval [x y]
+  (make-interval
+   (- (lower-bound x) (upper-bound y))
+   (- (upper-bound x) (lower-bound y))
+   ))
+
+;; 2.9
+
+;; we can prove:
+;; if i = i1 + i2 then w = w1 + w2
+;; if i = i1 - i2 then w = w1 + w2
+;; counter example for multiplication:
+;; [0, 1] * [0, 1] = [0, 1] (w1 = 1, w2 = 1 and w = 1)
+;; [1, 2] * [1, 2] = [1, 4] (w1 = 1, w2 = 1 and w = 3)
+;; so the width of the multiplication is not a function of widths of the operands
+;; dvision being a form of multiplication, the same can be said of division.
+
+;; 2.11
+
+(defn mul-interval
+  [p q]
+   (let [
+         x1 (lower-bound p)
+         x2 (upper-bound p)
+         y1 (lower-bound q)
+         y2 (upper-bound q)
+         ]
+     (cond
+       (and (>= x1 0) (>= x2 0) (>= y1 0) (>= y2 0))
+              (make-interval (* x1 y1) (* x2 y2))
+       (and (< x1 0) (>= x2 0) (>= y1 0) (>= y2 0))
+            (make-interval (* x1 y2) (* x2 y2))
+       (and (< x1 0) (< x2 0) (>= y1 0) (>= y2 0))
+            (make-interval (* x1 y2) (* x2 y1))
+       (and (>= x1 0) (>= x2 0) (< y1 0) (>= y2 0))
+            (make-interval (* x2 y1) (* x2 y2))
+       (and (< x1 0) (>= x2 0) (< y1 0) (>= y2 0))
+            (make-interval
+             (min (* x1 y2) (* x2 y1))
+             (max (* x1 y1) (* x2 y2))
+             )
+       (and (< x1 0) (< x2 0) (< y1 0) (>= y2 0))
+            (make-interval (* x1 y2) (* x1 y1))
+       (and (>= x1 0) (>= x2 0) (< y1 0) (< y2 0))
+            (make-interval (* x2 y1) (* x1 y2))
+       (and (< x1 0) (>= x2 0) (< y1 0) (< y2 0))
+            (make-interval (* x2 y1) (* x1 y1))
+       (and (< x1 0) (< x2 0) (< y1 0) (< y2 0))
+            (make-interval (* x2 y2) (* x1 y1))
+     )
+   ))
