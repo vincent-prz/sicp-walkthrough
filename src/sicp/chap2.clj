@@ -207,3 +207,141 @@
             (make-interval (* x2 y2) (* x1 y1))
      )
    ))
+
+;; 2.12
+
+(defn make-center-percent
+  [c p]
+  (let [w (* p c)]
+    (make-interval (- c w) (+ c w))
+    )
+  )
+
+(defn center
+  [i]
+  (sicp.chap1/average (lower-bound i) (upper-bound i))
+  )
+
+(defn percent
+  [i]
+  (let [
+        c (center i)
+        w (- (upper-bound i) c)
+        ]
+    (/ w c)
+    )
+  )
+
+;; 2.13
+
+;; we assume what bounds are positive.
+;; lower-product = (c1 - w1)(c2 - w2) ~= c1c2 - (w1c2 + w2c1)
+;; here we have neglected the term w1w2. Similarly for the upper bound:
+;; upper-product = (c1 + w1)(c2 + w2) ~= c1c2 + (w1c2 + w2c1)
+;; it results that:
+;; center-product = c1c2
+;; w-product = w1c2 + w2c1
+;; percentage-product = (w1c2 + w2c1) / c1c2 = w1 / c1 + w2 / c2
+;;   = percentage-1 + percentage-2
+
+;; 2.17
+
+(defn last-pair
+  [l]
+  (if (= (count l) 1)
+    (first l)
+    (last-pair (rest l)))
+  )
+
+;; 2.18
+
+(defn reverse-pair
+  [l]
+  (if (empty? l)
+    nil
+    (concat (reverse-pair (rest l)) (list (first l)))
+    )
+  )
+
+;; 2.19
+
+
+(defn first-denomination
+  [coins]
+  (first coins)
+  )
+
+(defn except-first-denomination
+  [coins]
+  (rest coins)
+  )
+
+(defn no-more?
+  [coins]
+  (empty? coins)
+  )
+
+(defn cc
+  [amount coin-values]
+  (cond (= amount 0) 1
+        (or (< amount 0) (no-more? coin-values)) 0
+        :else (+
+               (cc amount (except-first-denomination coin-values))
+               (cc (- amount (first-denomination coin-values)) coin-values)
+               )
+        )
+  )
+
+(def uscoins (list 50 25 10 5 1))
+(def ukcoins (list 100 50 20 10 5 2 1 0.5))
+
+;; the algorithm is independent of the order of appearance of the coins
+
+;; 2.20
+
+;; would be much less clunky with a filter
+(defn same-parity
+  [x & more]
+  (defn rec-aux
+    [l]
+    (cond (empty? l) nil
+          (= (mod (first l) 2) (mod x 2)) (conj (rec-aux (rest l)) (first l))
+          :else (rec-aux (rest l))
+    ))
+  (rec-aux more)
+  )
+
+;; 2.21
+
+(defn square-list-clunky
+  [l]
+  (if (empty? l)
+    nil
+    (conj (square-list-clunky (rest l)) (sicp.chap1/square (first l)))
+    )
+  )
+
+(defn square-list [l] (map sicp.chap1/square l))
+
+;; 2.22
+
+;; the first answer gives a list in reverse order because the `answer`
+;; progressively being built accumulates the elemnts in reverse order
+
+;; the second answer is wrong because the second argument must be
+;; a list of elements with the same type as the first argument.
+;; here the first argument is a list of int, and the second argument
+;; is an int, this is a type mismatch.
+
+;; 2.23
+
+;; tried to reuse map but it didn't work
+(defn for-each
+  [f l]
+  (if (empty? l)
+    true
+    (let [h (first l) t (rest l)]
+      (f h)
+      (for-each f t)
+      )
+  ))
