@@ -426,3 +426,47 @@
 ;; (defn branch-structure [br] (first (nth br 1)))
 ;; the other selectors remain the same
 ;; Question: not sure how the new defiition of branch works if structure is a number ?
+
+;; 2.30
+(defn square-tree-clunky
+  [tree]
+  (cond
+    (not (list? tree)) (sicp.chap1/square tree)
+    (empty? tree) tree
+    :else (conj (square-tree-clunky (rest tree)) (square-tree-clunky (first tree)))
+    )
+  )
+
+(defn square-tree
+  [tree]
+  (if
+      (not (list? tree)) (sicp.chap1/square tree)
+      (map square-tree tree)
+      )
+  )
+
+;; 2.31
+(defn tree-map
+  [f tree]
+  (if
+      (not (list? tree)) (f tree)
+      (map (fn [t] (tree-map f t)) tree)
+      )
+  )
+
+;; 2.32
+
+(defn subsets
+  [s]
+  (if (empty? s)
+    (list (list))
+    (let [rst (subsets(rest s))]
+      (concat rst
+              (map (fn [x] (conj x (first s))) rst)
+              )
+      )
+    )
+  )
+
+;; explanation: given a set l:
+;; subset(l union {x}) = susbets(l) + {l'union{x}, for l' in susbsets(l)}
