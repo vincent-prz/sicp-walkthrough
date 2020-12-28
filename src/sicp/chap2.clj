@@ -345,3 +345,84 @@
       (for-each f t)
       )
   ))
+
+;; 2.27
+
+(defn reverse-deep
+  [l]
+  (cond
+    (not (list? l)) l
+    (empty? l) nil
+    :else (let [h (first l) t (rest l)]
+      (concat (reverse-deep t) (list (reverse-deep h)))
+      )
+    )
+  )
+
+;; 2.28
+
+(defn fringe
+  [tree]
+  (cond
+    (not (list? tree)) (list tree)
+    (empty? tree) nil
+    :else (let [h (first tree) t (rest tree)]
+      (concat (fringe h) (fringe t))
+      )
+    )
+  )
+
+;; 2.29
+
+(defn make-mobile
+  [left right]
+  (list left right)
+  )
+
+(defn make-branch
+  [length structure]
+  (list length structure)
+  )
+
+(defn left-branch [mob] (first mob))
+(defn right-branch [mob] (nth mob 1))
+
+(defn branch-length [br] (first br))
+(defn branch-structure [br] (nth br 1))
+
+(defn total-weight
+  [mob]
+  (defn branch-weight
+    [br]
+    (let [length (branch-length br) structure (branch-structure br)]
+      (if (list? structure)
+        (* length (total-weight structure))
+        (* length structure)
+        )
+    )
+  )
+  (+ (branch-weight (left-branch mob)) (branch-weight (right-branch mob)))
+  )
+
+;; not cool: duplicating branch-weight subfunction
+;; it would be nice to be able to define mutually recursive functions
+(defn is-balanced
+  [mob]
+  (defn branch-weight
+    [br]
+    (let [length (branch-length br) structure (branch-structure br)]
+      (if (list? structure)
+        (* length (total-weight structure))
+        (* length structure)
+        )
+      )
+    )
+  (= (branch-weight (left-branch mob)) (branch-weight (right-branch mob)))
+  )
+
+;; d)
+;; we need to change the selectors this way:
+;; (defn right-branch [mob] (first (nth mob 1)))
+;; (defn branch-structure [br] (first (nth br 1)))
+;; the other selectors remain the same
+;; Question: not sure how the new defiition of branch works if structure is a number ?
