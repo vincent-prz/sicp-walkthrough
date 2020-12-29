@@ -470,3 +470,93 @@
 
 ;; explanation: given a set l:
 ;; subset(l union {x}) = susbets(l) + {l'union{x}, for l' in susbsets(l)}
+
+;; 2.33
+
+(defn my-map
+  [p sequence]
+  (reduce
+   (fn [accum, current] (concat accum (list (p current))))
+   (list)
+   sequence)
+  )
+
+(defn my-append
+  [p1 p2]
+  (reduce conj p2 (reverse p1))
+  )
+
+(defn my-length
+  [sequence]
+  (reduce (fn [accum, current] (inc accum)) 0 sequence)
+  )
+
+;; 2.34
+
+(defn horner-eval
+  [x coeffs]
+  (reduce
+   (fn [accum, c] (+ c (* x accum)))
+   0
+   (reverse coeffs)
+   )
+  )
+
+;; 2.35
+
+(defn count-leaves
+  [tree]
+  (reduce
+   +
+   0
+   (map
+    (fn [subtree]
+      (cond
+        (not (list? subtree)) 1
+        (empty? subtree) 0
+        :else (count-leaves subtree)
+      ))
+    tree
+   )
+  ))
+
+;; 2.36
+
+(defn accumulate-n
+  [op init seqs]
+  (if (empty? (first seqs))
+    (list)
+    (conj
+     (accumulate-n op init (map rest seqs))
+     (reduce op init (map first seqs))
+     )
+   )
+  )
+
+;; 2.37
+
+(defn dot-product
+  [v w]
+  (reduce + 0 (map * v w))
+  )
+
+(defn matrix-*-vector
+  [m v]
+  (map (fn [row] (dot-product row v)) m)
+  )
+
+(defn conj-end
+  [coll elem]
+  (concat coll (list elem))
+  )
+
+(defn transpose
+  [mat]
+  (accumulate-n conj-end (list) mat)
+  )
+
+(defn matrix-*-matrix
+  [m n]
+  (let [cols (transpose n)]
+    (map (fn [row] (matrix-*-vector cols row)) m))
+  )
