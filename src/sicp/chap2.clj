@@ -560,3 +560,33 @@
   (let [cols (transpose n)]
     (map (fn [row] (matrix-*-vector cols row)) m))
   )
+
+;; 2.38
+
+;; I have been using `reduce` so far, which is actually the equivalent of `fold-left`
+;; let's define `fold-right`
+
+(defn fold-right
+  [op init seq]
+  (defn iter [result l]
+    (if (empty? l)
+      result
+      (iter (op (first l) result) (rest l))
+      )
+  )
+  (iter init seq)
+  )
+
+;; if op is commutative both folds will yield the same results
+
+;; 2.39
+
+(defn reverse-w-fold-left [seq] (reduce conj '() seq))
+
+(defn reverse-w-fold-right
+  [seq] (
+         fold-right
+         (fn [current accum] (concat (list current) accum))
+         '()
+         seq)
+  )
