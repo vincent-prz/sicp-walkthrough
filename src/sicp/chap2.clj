@@ -590,3 +590,139 @@
          '()
          seq)
   )
+
+;; 2.40
+(defn enumerate-interval
+  [n m]
+  (if (> n m)
+    '()
+    (conj (enumerate-interval (inc n) m) n)
+    )
+  )
+
+
+(defn flatmap
+  [f seq]
+  (reduce concat '() (map f seq))
+  )
+
+(defn unique-pairs
+  [n]
+  (flatmap
+   (fn [i]
+     (map (fn [j] (list j i)) (enumerate-interval 1 (dec i)))
+     )
+   (enumerate-interval 2 n)
+   )
+  )
+
+(defn sum-seq [seq] (reduce + seq))
+
+(defn prime-sum-pairs
+  [n]
+  (filter
+   (fn [pair] (sicp.chap1/prime? (sum-seq pair)))
+   (unique-pairs n)
+   )
+  )
+
+;; 2.41
+(defn unique-triples
+  [n]
+  (flatmap
+   (fn [k]
+     (map (fn [pair] (conj-end pair k)) (unique-pairs (dec k)))
+     )
+   (enumerate-interval 3 n)
+   )
+  )
+
+(defn triple-sum
+  [n s]
+  (filter
+   (fn [triple] (= (sum-seq triple) s))
+   (unique-triples n)
+   )
+  )
+
+;; 2.42
+
+(def empty-board '())
+
+(defn get-row [position] (first position))
+(defn get-col [position] (nth position 1))
+
+(defn adjoin-position
+  [row col board]
+  (conj board (list row col))
+  )
+
+(defn split-by-predicate
+  [pred seq]
+  (list (filter pred seq) (filter (fn [x] (not (pred x))) seq))
+  )
+
+(defn row-safe?
+  [k board]
+  "assumption: board is not empty"
+  (let [
+        split (split-by-predicate (fn [pos] (= (get-col pos) k)) board)
+        new-pos (first (first split))
+        remaining-pos (nth split 1)
+        new-row (get-row new-pos)
+        ]
+    (empty? (filter (fn [position] (= (get-row position) new-row)) remaining-pos))
+    )
+  )
+
+(defn same-diagonal?
+  [pos1 pos2]
+  (let [
+        row1 (get-row pos1)
+        col1 (get-col pos1)
+        row2 (get-row pos2)
+        col2 (get-col pos2)
+        ]
+    (= (sicp.chap1/abs (- row1 row2)) (sicp.chap1/abs (- col1 col2)))
+    )
+  )
+
+(defn diagonal-safe?
+  [k board]
+  "assumption: board is not empty"
+  (let [
+        split (split-by-predicate (fn [pos] (= (get-col pos) k)) board)
+        new-pos (first (first split))
+        remaining-pos (nth split 1)
+        ]
+    (empty? (filter (fn [position] (same-diagonal? position new-pos)) remaining-pos))
+    )
+  )
+
+(defn safe?
+  [k board]
+  (and (row-safe? k board) (diagonal-safe? k board))
+  )
+
+(defn queens
+  [board-size]
+  (defn queen-cols
+    [k]
+    (if (= k 0)
+      (list empty-board)
+      (filter
+       (fn [positions] (safe? k positions))
+       (flatmap
+        (fn [rest-queens]
+          (map
+           (fn [new-row] (adjoin-position new-row k rest-queens))
+           (enumerate-interval 1 board-size)
+           )
+          )
+        (queen-cols (dec k))
+        )
+       )
+      )
+    )
+  (queen-cols board-size)
+  )
