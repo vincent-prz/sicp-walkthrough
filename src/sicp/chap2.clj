@@ -726,3 +726,33 @@
     )
   (queen-cols board-size)
   )
+
+;; 2.43
+(defn queens-slow
+  [board-size]
+  (defn queen-cols
+    [k]
+    (if (= k 0)
+      (list empty-board)
+      (filter
+       (fn [positions] (safe? k positions))
+       (flatmap
+        (fn [new-row]
+          (map
+           (fn [rest-queens] (adjoin-position new-row k rest-queens))
+           (queen-cols (dec k))
+           )
+          )
+        (enumerate-interval 1 board-size)
+        )
+       )
+      )
+    )
+  (queen-cols board-size)
+  )
+
+;; with this version of the algorithm, we are for each column k, computing
+;; board-size times the safe boards for the (k -1) previous columns, which
+;; is a waste.
+;; The complexity of this algoritm satisfies the following relationship:
+;; T[k] = N*T[k - 1], so the complexity grows exponentially with k.
