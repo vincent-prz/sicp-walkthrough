@@ -752,7 +752,44 @@
   )
 
 ;; with this version of the algorithm, we are for each column k, computing
-;; board-size times the safe boards for the (k -1) previous columns, which
+;; board-size times the safe boards for the (k - 1) previous columns, which
 ;; is a waste.
 ;; The complexity of this algoritm satisfies the following relationship:
 ;; T[k] = N*T[k - 1], so the complexity grows exponentially with k.
+
+;; 2.44
+
+(defn below
+  [painter]
+  nil
+  )
+
+(defn beside
+  [painter]
+  nil
+  )
+
+(defn up-split
+  [painter n]
+  (if (= n 0)
+    painter
+    (let [smaller (up-split painter (dec n))]
+      (below painter (beside smaller smaller))
+      )
+    )
+  )
+
+;; 2.45
+
+(defn split
+  [outer-op inner-op]
+  (defn rec [painter n]
+    (if (= n 0)
+      painter
+      (let [smaller (rec painter (dec n))]
+        (outer-op painter (inner-op smaller smaller))
+        )
+      )
+    )
+  rec
+  )
