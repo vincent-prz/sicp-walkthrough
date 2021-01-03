@@ -761,11 +761,13 @@
 
 (defn below
   [painter]
+  "primitive not yet implemented"
   nil
   )
 
 (defn beside
   [painter]
+  "primitive not yet implemented"
   nil
   )
 
@@ -792,4 +794,210 @@
       )
     )
   rec
+  )
+
+;; 2.46
+
+(defn make-vect [x y] (list x y))
+(defn xcor-vect [v] (first v))
+(defn ycor-vect [v] (nth v 1))
+
+(defn add-vect
+  [v w]
+  (make-vect
+   (+ (xcor-vect v) (xcor-vect w))
+   (+ (ycor-vect v) (ycor-vect w))
+   )
+  )
+
+(defn sub-vect
+  [v w]
+  (make-vect
+   (- (xcor-vect v) (xcor-vect w))
+   (- (ycor-vect v) (ycor-vect w))
+   )
+  )
+
+(defn scale-vect
+  [s v]
+  (make-vect
+   (* s (xcor-vect v))
+   (* s (ycor-vect v))
+   )
+  )
+
+;; 2.47
+
+(defn make-frame
+  [origin edge1 edge2]
+  (list origin edge1 edge2)
+  )
+
+(defn origin
+  [frame]
+  (first frame)
+  )
+
+(defn edge1
+  [frame]
+  (nth frame 1)
+  )
+
+(defn edge2
+  [frame]
+  (nth frame 2)
+  )
+
+;; NOTE: I'm confused with the alternative definition given in the book,
+;; shouldn't it be this way ? (cons edge1 edge2) should crash ?
+;; if constructor should indeed be this way, selectors are the same.
+(defn make-frame-alt
+  [origin edge1 edge2]
+  (cons origin (cons edge1 (cons edge2 nil)))
+  )
+
+;; 2.48
+
+(defn make-segment [v w] (list v w))
+(defn start-segment [seg] (first seg))
+(defn end-segment [seg] (nth seg 1))
+
+;; 2.49
+
+(defn draw-line
+  [vec]
+  "primitive not yet implemented"
+  nil
+  )
+
+(defn frame-coord-map
+  [frame]
+  (fn [vec]
+    (let [x (xcor-vect vec) y(ycor-vect)]
+      (add-vect
+       (origin frame)
+       (scale-vect x (edge1 frame))
+       (scale-vect y (edge2 frame))
+       )
+      )
+    )
+  )
+
+(defn segments->painter
+  [segments-list]
+  (fn [frame]
+    (for-each
+     (fn [segment]
+       (draw-line (frame-coord-map frame) (start-segment segment))
+       (draw-line (frame-coord-map frame) (end-segment segment))
+       )
+     segments-list
+     )
+    )
+  )
+
+(defn outline-painter []
+  (segments->painter
+   (let [
+         a (make-vect 0 0)
+         b (make-vect 1 0)
+         c (make-vect 1 1)
+         d (make-vect 0 1)
+         ]
+     (segments->painter
+      (list
+       (make-segment a b)
+       (make-segment b c)
+       (make-segment c d)
+       (make-segment d a)
+       ))
+    )
+   )
+  )
+
+(defn x-painter []
+  (segments->painter
+   (let [
+         a (make-vect 0 0)
+         b (make-vect 1 0)
+         c (make-vect 1 1)
+         d (make-vect 0 1)
+         ]
+     (segments->painter
+      (list
+       (make-segment a c)
+       (make-segment b d)
+       ))
+     )
+   )
+  )
+
+(defn diamond-painter []
+  (segments->painter
+   (let [
+         a (make-vect 1/2 0)
+         b (make-vect 1 1/2)
+         c (make-vect 1/2 1)
+         d (make-vect 0 1/2)
+         ]
+     (segments->painter
+      (list
+       (make-segment a b)
+       (make-segment b c)
+       (make-segment c d)
+       (make-segment d a)
+       ))
+     )
+   )
+  )
+
+(defn wave []
+  "we start from the bottom of the left foot"
+  (segments->painter
+   (let [
+         a (make-vect 2/3 0)
+         b (make-vect 2/5 0)
+         c (make-vect 1/2 1/3)
+         d (make-vect 3/5 0)
+         e (make-vect 2/3 0)
+         f (make-vect 19/30 1/2)
+         g (make-vect 1 2/15)
+         h (make-vect 1 4/15)
+         i (make-vect 7/9 3/5)
+         j (make-vect 19/30 3/5)
+         k (make-vect 7/10 5/6)
+         l (make-vect 19/30 1)
+         m (make-vect 11/30 1)
+         n (make-vect 3/10 5/6)
+         o (make-vect 11/30 3/5)
+         p (make-vect 1/3 3/5)
+         q (make-vect 1/5 8/15)
+         r (make-vect 0 5/6)
+         s (make-vect 0 3/5)
+         t (make-vect 1/5 9/20)
+         u (make-vect 1/3 8/15)
+         v (make-vect 19/30 11/20)
+         ]
+     (segments->painter
+      (list
+       (make-segment b c)
+       (make-segment c d)
+       (make-segment e f)
+       (make-segment f g)
+       (make-segment h i)
+       (make-segment i j)
+       (make-segment j k)
+       (make-segment k l)
+       (make-segment m n)
+       (make-segment n o)
+       (make-segment o p)
+       (make-segment p q)
+       (make-segment q r)
+       (make-segment s t)
+       (make-segment t u)
+       (make-segment u v)
+       (make-segment v a)
+       ))
+     )
+   )
   )
