@@ -1075,3 +1075,33 @@
    (beside (rotate90-painter painter1) (rotate90-painter painter2))
    )
   )
+
+;; 2.52: skipping for now
+
+;; 2.53
+
+(defn memq
+  [item x]
+  (cond (empty? x) false
+        (= item (first x)) x
+        :else (memq item (rest x))
+        )
+  )
+
+;; 2.54
+
+(defn equal?
+  [a b]
+  (cond (empty? a) (empty? b)
+        (empty? b) (empty? a)
+        :else (and (= (first a) (first b)) (equal? (rest a) (rest b)))
+        )
+  )
+
+;; 2.55
+
+;; (first ''abracadabra) is equivalent to:
+;; -> (first (quote (quote abracadabra)))
+;; -> (first '(quote abracadabra))
+;; and (first 'l) where l is an expression of the form (x y ...) yields x
+
