@@ -873,7 +873,7 @@
 (defn frame-coord-map
   [frame]
   (fn [vec]
-    (let [x (xcor-vect vec) y(ycor-vect)]
+    (let [x (xcor-vect vec) y (ycor-vect vec)]
       (add-vect
        (origin frame)
        (scale-vect x (edge1 frame))
@@ -999,5 +999,79 @@
        (make-segment v a)
        ))
      )
+   )
+  )
+
+;; 2.50
+(defn transform-painter
+  [painter origin corner1 corner2]
+  (fn [frame]
+    (let [
+          m (frame-coord-map frame)
+          new-origin (m origin)
+          ]
+      (painter (
+                make-frame
+                new-origin
+                sub-vect (m corner1) new-origin
+                sub-vect (m corner2) new-origin
+                )
+               )
+      )
+    )
+  )
+
+(defn flip-horiz
+  [painter]
+  (transform-painter
+   painter
+   (make-vect 1 0)
+   (make-vect 0 0)
+   (make-vect 1 1)
+   )
+  )
+
+(defn rotate90-painter
+  [painter]
+  (transform-painter
+   painter
+   (make-vect 1 0)
+   (make-vect 1 1)
+   (make-vect 0 0)
+   )
+  )
+
+(defn rotate180-painter
+  [painter]
+  (rotate90-painter (rotate90-painter painter))
+  )
+
+(defn rotate270-painter
+  [painter]
+  (rotate90-painter (rotate180-painter painter))
+  )
+
+;; 2.51
+
+(defn below
+  [painter1 painter2]
+  (let [
+        paint-bottom
+        (transform-painter
+         painter1 (make-vect 0 0) (make-vect 1 0) (make-vect 0 0.5))
+        paint-up
+        (transform-painter
+         painter2 (make-vect 0 0.5) (make-vect 1 0.5) (make-vect 0 1))
+        ]
+    (fn [frame]
+      (do (painter1 frame) (painter2 frame))
+      )
+    )
+  )
+
+(defn below-v2
+  [painter1 painter2]
+  (rotate270-painter
+   (beside (rotate90-painter painter1) (rotate90-painter painter2))
    )
   )
