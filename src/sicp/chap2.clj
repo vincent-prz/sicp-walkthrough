@@ -1105,3 +1105,101 @@
 ;; -> (first '(quote abracadabra))
 ;; and (first 'l) where l is an expression of the form (x y ...) yields x
 
+;; 2.56
+
+(defn variable? [e] (symbol? e))
+
+(defn same-variable?
+  [e f]
+  (and (variable? e) (variable? f) (= e f))
+  )
+
+(defn make-sum
+  [a b]
+  (cond (and (number? a) (number? b)) (+ a b)
+        (= 0 a) b
+        (= 0 b) a
+  :else (list '+ a b))
+  )
+
+(defn sum?
+  [e]
+  (= (first e) '+)
+  )
+
+(defn addend
+  [e]
+  (nth e 1)
+  )
+
+(defn augend
+  [e]
+  (nth e 2)
+  )
+
+(defn make-product
+  [a b]
+  (cond (and (number? a) (number? b)) (* a b)
+        (= 0 a) 0
+        (= 0 b) 0
+        (= 1 a) b
+        (= 1 b) a
+  :else (list '* a b))
+  )
+
+(defn product?
+  [e]
+  (= (first e) '*)
+  )
+
+(defn multiplier
+  [e]
+  (nth e 1)
+  )
+
+(defn multiplicand
+  [e]
+  (nth e 2)
+  )
+
+(defn make-exponentiation
+  [a b]
+  (cond (= 0 b) 1
+        (= 0 a) 0
+        (= 1 b) a
+        :else (list '** a b))
+  )
+
+(defn exponentiation?
+  [e]
+  (= (first e) '**)
+  )
+
+(defn base
+  [e]
+  (nth e 1)
+  )
+
+(defn exponent
+  [e]
+  (nth e 2)
+  )
+
+(defn deriv
+  [exp var]
+  (cond (number? exp) 0
+        (variable? exp) (if (same-variable? exp var) 1 0)
+        (sum? exp) (make-sum (deriv (addend exp) var) (deriv (augend exp) var))
+        (product? exp) (let [u (multiplier exp) v (multiplicand exp)]
+                         (make-sum
+                          (make-product (deriv u var) v)
+                          (make-product u (deriv v var)))
+                         )
+        (exponentiation? exp) (let [u (base exp) n (exponent exp)]
+                                (make-product
+                                 (make-product n (make-exponentiation u (dec n)))
+                                 (deriv u var)
+                                 )
+                                )
+        )
+  )
