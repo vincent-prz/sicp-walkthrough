@@ -1105,7 +1105,7 @@
 ;; -> (first '(quote abracadabra))
 ;; and (first 'l) where l is an expression of the form (x y ...) yields x
 
-;; 2.56
+;; 2.56, 2.57
 
 (defn variable? [e] (symbol? e))
 
@@ -1119,7 +1119,8 @@
   (cond (and (number? a) (number? b)) (+ a b)
         (= 0 a) b
         (= 0 b) a
-  :else (list '+ a b))
+        :else (list '+ a b)
+        )
   )
 
 (defn sum?
@@ -1134,7 +1135,9 @@
 
 (defn augend
   [e]
-  (nth e 2)
+  (cond (= (count e) 3) (nth e 2)
+        :else (conj (rest (rest e)) '+)
+        )
   )
 
 (defn make-product
@@ -1144,7 +1147,7 @@
         (= 0 b) 0
         (= 1 a) b
         (= 1 b) a
-  :else (list '* a b))
+        :else (list '* a b))
   )
 
 (defn product?
@@ -1159,7 +1162,9 @@
 
 (defn multiplicand
   [e]
-  (nth e 2)
+  (cond (= (count e) 3) (nth e 2)
+        :else (conj (rest (rest e)) '*)
+        )
   )
 
 (defn make-exponentiation
@@ -1201,5 +1206,7 @@
                                  (deriv u var)
                                  )
                                 )
+        :else (throw (Throwable.
+                      (format "Error: unknown expression type -- DERIV %s" exp)))
         )
   )
