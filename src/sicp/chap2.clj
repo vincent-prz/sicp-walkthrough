@@ -1210,3 +1210,69 @@
                       (format "Error: unknown expression type -- DERIV %s" exp)))
         )
   )
+
+;; 2.58
+(defn make-sum2
+  [a b]
+  (cond (and (number? a) (number? b)) (+ a b)
+        (= 0 a) b
+        (= 0 b) a
+        :else (list a '+ b)
+        )
+  )
+
+(defn sum2?
+  [e]
+  (and (list? e) (> (count e) 2) (= (nth e 1) '+))
+  )
+
+(defn addend2
+  [e]
+  (first e)
+  )
+
+(defn augend2
+  [e]
+  (nth e 2)
+  )
+
+(defn make-product2
+  [a b]
+  (cond (and (number? a) (number? b)) (* a b)
+        (= 0 a) 0
+        (= 0 b) 0
+        (= 1 a) b
+        (= 1 b) a
+        :else (list a '* b))
+  )
+
+(defn product2?
+  [e]
+  (and (list? e) (> (count e) 2) (= (nth e 1) '*))
+  )
+
+(defn multiplier2
+  [e]
+  (first e)
+  )
+
+(defn multiplicand2
+  [e]
+  (nth e 2)
+  )
+
+
+(defn deriv2
+  [exp var]
+  (cond (number? exp) 0
+        (variable? exp) (if (same-variable? exp var) 1 0)
+        (sum2? exp) (make-sum2 (deriv2 (addend2 exp) var) (deriv2 (augend2 exp) var))
+        (product2? exp) (let [u (multiplier2 exp) v (multiplicand2 exp)]
+                         (make-sum2
+                          (make-product2 (deriv2 u var) v)
+                          (make-product2 u (deriv2 v var)))
+                         )
+        :else (throw (Throwable.
+                      (format "Error: unknown expression type -- DERIV2 %s" exp)))
+        )
+  )
