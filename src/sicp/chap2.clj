@@ -1276,3 +1276,66 @@
                       (format "Error: unknown expression type -- DERIV2 %s" exp)))
         )
   )
+
+;; 2.59
+
+(defn elem-set?
+  [x set]
+  (cond (empty? set) false
+        (= x (first set)) true
+        :else (elem-set? x (rest set))
+        )
+  )
+
+(defn adjoin-set
+  [x set]
+  (if (elem-set? x set)
+    set
+    (conj set x)
+    )
+  )
+
+(defn union-set
+  [set1 set2]
+  (if (empty? set1)
+    set2
+    (adjoin-set (first set1) (union-set (rest set1) set2))
+    )
+  )
+
+;; 2.60
+;; elem-set? -> same implementation -> O(n). However n will be larger, which can
+;;   be an issue if sets contain lots of conecutive repetitions: '(x x x x x x x ...)
+;; adjoin-set -> equal to conj -> O(1)
+;; intersection-set -> same implementation -> O(n**2). However n will be larger
+;; union-set -> same implementation -> but complexity = O(n) instead of O(n**2)
+;;   indeed we use n times adjoin-set, which is now O(1)
+;; we will prefer this representation if there are no hard memory requirements
+
+;; 2.61
+(defn adjoin-set
+  [x set]
+  (cond (empty? set) (list x)
+        (< x (first set)) (conj set x)
+        :else (conj (adjoin-set x (rest set)) (first set))
+    )
+  )
+
+;; 2.62
+(defn union-set
+  [set1 set2]
+  (cond (empty? set1) set2
+        (empty? set2) set1
+        :else (let [
+              x1 (first set1)
+              r1 (rest set1)
+              x2 (first set2)
+              r2 (rest set2)
+              ]
+          (cond (< x1 x2) (conj (union-set r1 set2) x1)
+                (> x1 x2) (conj (union-set set1 r2) x2)
+                :else (conj (union-set r1 r2) x1)
+            )
+          )
+        )
+  )
