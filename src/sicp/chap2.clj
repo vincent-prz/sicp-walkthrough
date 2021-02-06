@@ -1339,3 +1339,121 @@
           )
         )
   )
+
+;; 2.63
+(defn make-tree [entry lb rb] (list entry lb rb))
+
+(defn entry [tree] (first tree))
+(defn left-branch [tree] (nth tree 1))
+(defn right-branch [tree] (nth tree 2))
+
+(defn tree->list1
+  [tree]
+  (if (empty? tree)
+    '()
+    (concat
+     (tree->list1 (left-branch tree))
+     (conj (tree->list1 (right-branch tree)) (entry tree))
+     )
+    )
+  )
+
+(defn tree->list2
+  [tree]
+  (defn copy-to-list
+    [tree result-list]
+    (if (empty? tree)
+      result-list
+      (copy-to-list
+       (left-branch tree)
+       (conj (copy-to-list (right-branch tree) result-list) (entry tree))
+       )
+      )
+    )
+  (copy-to-list tree '())
+  )
+
+;; questions:
+;; complexity of tree-list1: T(n) = 2 * T(n/ 2) + c => O(n)
+;; difference between the two: idk!
+
+;; 2.64
+
+(defn list->tree
+  [elements]
+  (defn partial-tree
+    [elts n]
+    (if (= n 0)
+      (list '() elts)
+      (let [
+            left-size (quot (- n 1) 2)
+            left-result (partial-tree elts left-size)
+            left-tree (first left-result)
+            non-left-elts (nth left-result 1)
+            new-entry (first non-left-elts)
+            right-size (- n (+ left-size 1))
+            right-result (partial-tree (rest non-left-elts) right-size)
+            right-tree (first right-result)
+            remaining-elts (nth right-result 1)
+            ]
+        (list (make-tree new-entry left-tree right-tree) remaining-elts)
+        )
+      )
+    )
+  (first (partial-tree elements (count elements)))
+  )
+
+;; a) we proceed recursively as follows:
+;; - build the left tree by taking the first half of elements,
+;; - take the middle element as the new entry
+;; - take the remaining elements and build the right sub tree
+
+;; b) the complexity satsisfies the relationship: T(n) = 2 * T(n / 2) + c
+;; so we have a linear complexity
+
+
+;; 2.65
+
+(defn union-sorted-lists
+  [list1 list2]
+  (cond (empty? list1) list2
+        (empty? list2) list1
+        (< (first list1) (first list2))
+        (cons (first list1) (union-sorted-lists (rest list1) list2))
+        :else (cons (first list2) (union-sorted-lists list1 (rest list2)))
+        )
+  )
+
+(defn union-set-balanced
+  [set1 set2]
+  (let [
+        list1 (tree->list1 set1)
+        list2 (tree->list1 set2)
+        full-list (union-sorted-lists list1 list2)
+        ]
+    (list->tree full-list)
+    )
+  )
+
+(defn intersection-sorted-lists
+  [list1 list2]
+  (cond (empty? list1) '()
+        (empty? list2) '()
+        (= (first list1) (first list2))
+        (cons (first list1) (intersection-sorted-lists (rest list1) (rest list2)))
+        (< (first list1) (first list2))
+        (intersection-sorted-lists (rest list1) list2)
+        :else (intersection-sorted-lists list1 (rest list2))
+        )
+  )
+
+(defn intersection-set-balanced
+  [set1 set2]
+  (let [
+        list1 (tree->list1 set1)
+        list2 (tree->list1 set2)
+        full-list (intersection-sorted-lists list1 list2)
+        ]
+    (list->tree full-list)
+    )
+  )
