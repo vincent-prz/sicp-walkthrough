@@ -1457,3 +1457,20 @@
     (list->tree full-list)
     )
   )
+
+;; 2.66
+
+;; assumption: a record is represented a pair of (key, value)
+(defn lookup
+  [given-key set]
+  (let [
+        entry-record (entry set)
+        entry-key (first entry-record)
+        ]
+    (cond (empty? set) false
+          (= given-key entry-key) entry-record
+          (< given-key entry-key) (lookup given-key (left-branch set))
+          :else (lookup given-key (right-branch set))
+          )
+    )
+  )
