@@ -1305,7 +1305,7 @@
 
 ;; 2.60
 ;; elem-set? -> same implementation -> O(n). However n will be larger, which can
-;;   be an issue if sets contain lots of conecutive repetitions: '(x x x x x x x ...)
+;;   be an issue if sets contain lots of consecutive repetitions: '(x x x x x x x ...)
 ;; adjoin-set -> equal to conj -> O(1)
 ;; intersection-set -> same implementation -> O(n**2). However n will be larger
 ;; union-set -> same implementation -> but complexity = O(n) instead of O(n**2)
@@ -1472,5 +1472,105 @@
           (< given-key entry-key) (lookup given-key (left-branch set))
           :else (lookup given-key (right-branch set))
           )
+    )
+  )
+
+;; 2.67
+
+(defn make-leaf
+  [symbol weight]
+  (list 'leaf symbol weight)
+  )
+
+(defn leaf? [obj] (= (first obj) 'leaf))
+
+(defn leaf-symbol [leaf] (nth leaf 1))
+
+(defn leaf-weight [leaf] (nth leaf 2))
+
+(defn symbols
+  [tree]
+  (if (leaf? tree)
+    (list (leaf-symbol tree))
+    (nth tree 2)
+    )
+  )
+
+(defn weight
+  [tree]
+  (if (leaf? tree)
+    (leaf-weight tree)
+    (nth tree 3)
+    )
+  )
+
+(defn left-branch [tree] (first tree))
+
+(defn right-branch [tree] (nth tree 1))
+
+(defn make-code-tree
+  [left right]
+  (list
+   left
+   right
+   (concat (symbols left) (symbols right))
+   (+ (weight left) (weight right))
+   )
+  )
+
+(defn decode-symbol
+  [bits tree]
+  (cond (leaf? tree) (list (leaf-symbol tree) bits)
+        (empty? bits) (throw (Throwable. "ERROR  NOT ENOUGH BITs"))
+        (= (first bits) 0) (decode-symbol (rest bits) (left-branch tree))
+        (= (first bits) 1) (decode-symbol (rest bits) (right-branch tree))
+        :else (throw (Throwable. (format "BAD BIT: %s" (first bits))))
+      )
+  )
+
+(defn decode
+  [bits tree]
+  (if (empty? bits)
+    '()
+    (let [
+          symbol-decoding-result (decode-symbol bits tree)
+          s (first symbol-decoding-result)
+          remaining-bits (nth symbol-decoding-result 1)
+          ]
+      (cons s (decode remaining-bits tree))
+      )
+    )
+  )
+
+(def sample-tree
+  (make-code-tree (make-leaf 'A 4)
+                  (make-code-tree
+                   (make-leaf 'B 2)
+                   (make-code-tree (make-leaf 'D 1)
+                                   (make-leaf 'C 1)))))
+
+(def sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+
+
+;; 2.68
+(defn encode-symbol
+  [symbol tree]
+  (cond (leaf? tree) '()
+        (elem-set? symbol (symbols (left-branch tree)))
+        (cons 0 (encode-symbol symbol (left-branch tree)))
+        (elem-set? symbol (symbols (right-branch tree)))
+        (cons 1 (encode-symbol symbol (right-branch tree)))
+        :else (throw (Throwable. "ERROR- symbol not found in tree"))
+    )
+  )
+
+(defn encode
+  [message tree]
+  (if (empty? message)
+    '()
+    (concat
+     (encode-symbol (first message) tree)
+     (encode (rest message) tree)
+     )
     )
   )
