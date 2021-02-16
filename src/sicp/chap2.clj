@@ -1574,3 +1574,51 @@
      )
     )
   )
+
+;; 2.69
+
+(defn adjoin-set [x set]
+  (cond (empty? set) (list x)
+        (< (weight x) (weight (first set))) (cons x set)
+        :else (cons (first set) (adjoin-set x (rest set)))
+        ))
+
+(defn make-leaf-set [pairs]
+  (if (empty? pairs)
+    '()
+    (let [
+          pair (first pairs)
+          new-leaf (make-leaf (first pair) (nth pair 1))
+          ]
+      (adjoin-set new-leaf (make-leaf-set (rest pairs)))
+      )
+    )
+  )
+
+;; assumption: trees is not empty
+(defn successive-merge
+  [trees]
+  (defn rec-aux
+    [trees]
+    (if (< (count trees) 2) trees
+        (let [
+              first-tree (first trees)
+              second-tree (nth trees 1)
+              ]
+          (rec-aux
+           (adjoin-set
+            (make-code-tree first-tree second-tree)
+            (drop 2 trees)
+            )
+           )
+          )
+        )
+    )
+  (first (rec-aux trees))
+  )
+
+(defn generate-huffman-tree [pairs] (successive-merge (make-leaf-set pairs)))
+
+;; proof that it works:
+;; (def generated-tree (generate-huffman-tree '((A 4) (B 2) (C 1) (D 1))))
+;; (= generated-tree sample-tree)
