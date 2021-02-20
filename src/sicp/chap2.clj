@@ -1622,3 +1622,64 @@
 ;; proof that it works:
 ;; (def generated-tree (generate-huffman-tree '((A 4) (B 2) (C 1) (D 1))))
 ;; (= generated-tree sample-tree)
+
+;; 2.70
+
+(def rock-song-tree
+  (generate-huffman-tree '((A 2) (BOOM 1) (GET 2) (JOB 2) (NA 16) (SHA 3) (YIP 9) (WAH 1))
+   )
+  )
+
+(def rock-song
+  '(GET A JOB
+    SHA NA NA NA NA NA NA NA NA
+    GET A JOB
+    SHA NA NA NA NA NA NA NA NA
+    WAH YIP YIP YIP YIP YIP YIP YIP YIP YIP
+    SHA BOOM
+    )
+  )
+
+(def encoded-rock-song (encode rock-song rock-song-tree))
+;; count encoded-rock-song == 84
+;; we would need at least 3 bits with a fixed length encoding
+;; that mean that to encode the song with a fixed length encoding we would need
+;; at least 36 (== count rock-song) * 3 = 108 bits
+;; using a huffman tree yielded a 24 bits saving.
+
+;; 2.71
+;; the tree for n = 5 has the following shape:
+;;   x
+;; 16 x
+;;   8 x
+;;    4 x
+;;     2 1
+;; it will have a similar shape for any n.
+;; number of bits for the most frequent: 1
+;; number of bits for the least frequent: n - 1
+
+;; 2.72
+;; Disclaimer: not sure at all about what I'm saying here!
+;; General case
+;; let n be the nunber of symbols.
+;; at each step of the recursion, we must search for the symbol lists of
+;; the left sub tree, and if it isn't found, in the symbol list of the right
+;; sub tree. Assuming the symbol list is sorted, the search takes at most log(n)
+;; steps. But this a gross upper bound, as when we go deeper in the tree, the
+;; symbol lists shrink.
+;; If we call h the depth of the huffman tree, then the number of steps is majored
+;; by h * log(n). But as per the caveat mentioned
+;; above, we may be able to find a more precise upper bound.
+;; we also would like to express a relationship between n, h and the decreasing
+;; rate ot the length of symbol lists.
+;;
+;; Ex 2.71 case
+;; In this case thigns are a bit simpler, we know that at each level of the tree
+;; we remove 1 symbol.
+;; encoding the most frequent: 1 step -> indeed we probe the symbol list of the
+;; first sublist tree, which contains this symbol.
+;; encoding the least frequent:
+;; In this case we know the depth of the tree is (n -1). Besides, at each
+;; level k of the tree, we must perform (1 + (n - k - 1)) computations
+;; so by summation we have an order of growth of n**2.
+
