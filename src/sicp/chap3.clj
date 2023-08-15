@@ -4,7 +4,10 @@
 (defn make-accumulator
   [init-val]
   (let [current-val (atom init-val)]
-    (fn [x] (reset! current-val (+ @current-val x)))
+    (fn [x] (do
+      (reset! current-val (+ @current-val x));
+      @current-val
+      ))
     )
   )
 
@@ -21,10 +24,11 @@
     )
   )
 
-;; 3.3
+;; 3.3, 3.4
 (defn make-account
   [balance password]
-  (let [current-balance (atom balance)]
+  (let [current-balance (atom balance)
+        nb-tries (atom 0)]
     (defn withdraw
       [amount]
       (if (< @current-balance amount)
@@ -36,10 +40,15 @@
       [amount]
       (reset! current-balance (+ @current-balance amount))
       )
+    (defn call-the-cops [] (throw (Throwable. "Calling the cops")))
     (defn check-password [p]
-      (if (not (= p password)) (throw (Throwable. "Incorrect password"))
-          ))
-    (defn dispatch [m p]
+      (if (not (= p password)) (do
+         (reset! nb-tries (inc @nb-tries))
+          (if (>= @nb-tries 7) (call-the-cops) (throw (Throwable. "Incorrect password")))
+          )
+          (reset! nb-tries 0)
+        ))
+    (defn dispatch [p m]
       (check-password p)
       (cond (= m 'withdraw) withdraw
             (= m 'deposit) deposit
