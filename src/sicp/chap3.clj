@@ -98,3 +98,31 @@
 (def pi-estimate
   (* 4.0 (estimate-integral in-unit-circle? -1 1 -1 1 2000))
   )
+
+;; 3.6
+
+(defn make-rand [initial-seed]
+  (defn rand-helper [seed]
+    (repeatedly
+      (let [gen (java.util.Random. seed)]
+        (fn [] (.nextInt gen)))))
+  (let [index (atom 0) random-values (atom (rand-helper initial-seed))]
+    (defn generate []
+      (let [result (nth @random-values @index)]
+        (reset! index (inc @index))
+        result
+      ))
+    (defn reset [seed]
+      (reset! index 0)
+      (reset! random-values (rand-helper seed))
+      nil
+      )
+    (defn dispatch [m]
+      (cond (= m 'generate) (generate)
+            (= m 'reset) reset
+            :else (throw (Throwable. (format "Unknown request %s" m)))
+      )
+    )
+  dispatch
+  )
+)
