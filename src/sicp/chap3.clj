@@ -126,3 +126,47 @@
   dispatch
   )
 )
+
+;; 3.7
+
+(defn make-account-v2
+  [balance password]
+  (let [current-balance (atom balance)
+        nb-tries (atom 0)]
+    (defn withdraw
+      [amount]
+      (if (< @current-balance amount)
+        "Insufficient funds"
+        (reset! current-balance (- @current-balance amount))
+        )
+      )
+    (defn deposit
+      [amount]
+      (reset! current-balance (+ @current-balance amount))
+      )
+    (defn call-the-cops [] (throw (Throwable. "Calling the cops")))
+    (defn dispatch [password p m]
+      (defn check-password [p]
+        (if (not (= p password)) (do
+           (reset! nb-tries (inc @nb-tries))
+            (if (>= @nb-tries 7) (call-the-cops) (throw (Throwable. "Incorrect password")))
+            )
+            (reset! nb-tries 0)
+          ))
+      (check-password p)
+      (cond (= m 'withdraw) withdraw
+            (= m 'deposit) deposit
+            (= m 'join) join
+            :else (throw (Throwable. (format "Unknown request %s" m)))
+            )
+      )
+    )
+    (defn join
+      [joint-password] (fn [p m] (dispatch joint-password p m)))
+    (fn [p m] (dispatch password p m))
+  )
+
+(defn make-joint
+  [acc password new-password]
+  ((acc password 'join) new-password)
+  )
