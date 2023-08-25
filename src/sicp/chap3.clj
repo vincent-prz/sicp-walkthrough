@@ -170,3 +170,15 @@
   [acc password new-password]
   ((acc password 'join) new-password)
   )
+
+
+;; 3.8
+
+(defn store-first-arg
+  [x]
+  (let [store (atom nil)]
+    (fn [arg]
+      (println (format "current store %s" @store))
+      (if (= @store nil) (do (println "reset!")(reset! store x)))
+    @store)
+    ))
