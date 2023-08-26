@@ -145,6 +145,8 @@
       (reset! current-balance (+ @current-balance amount))
       )
     (defn call-the-cops [] (throw (Throwable. "Calling the cops")))
+    (defn join
+      [joint-password] (fn [p m] (dispatch joint-password p m)))
     (defn dispatch [password p m]
       (defn check-password [p]
         (if (not (= p password)) (do
@@ -161,8 +163,6 @@
             )
       )
     )
-    (defn join
-      [joint-password] (fn [p m] (dispatch joint-password p m)))
     (fn [p m] (dispatch password p m))
   )
 
