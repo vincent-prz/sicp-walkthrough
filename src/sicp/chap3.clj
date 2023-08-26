@@ -174,11 +174,12 @@
 
 ;; 3.8
 
-(defn store-first-arg
-  [x]
+(defn make-return-first-arg
+  []
   (let [store (atom nil)]
     (fn [arg]
-      (println (format "current store %s" @store))
-      (if (= @store nil) (do (println "reset!")(reset! store x)))
+      (if (= @store nil) (reset! store arg))
     @store)
     ))
+
+(def return-first-arg (make-return-first-arg))
