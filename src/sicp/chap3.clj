@@ -183,3 +183,24 @@
     ))
 
 (def return-first-arg (make-return-first-arg))
+
+;; 3.12
+
+(defn set-cdr!
+  [x y]
+  (reset! x (conj y (first @x)))
+ x)
+
+(defn last-pair
+  [x]
+  (if (empty? (rest x)) x (last-pair (rest x)))
+  )
+
+(defn append
+  [x y]
+  (concat x y))
+
+(defn append!
+  [x y]
+  (set-cdr! (last-pair @x) y)
+ x)
