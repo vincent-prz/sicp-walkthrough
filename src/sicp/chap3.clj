@@ -187,9 +187,9 @@
 ;; 3.12
 
 (defn set-cdr!
-  [x y]
-  (reset! x (conj y (first @x)))
- x)
+  [atom-x y]
+  (reset! atom-x (conj y (first @atom-x)))
+ atom-x)
 
 (defn last-pair
   [x]
@@ -201,6 +201,8 @@
   (concat x y))
 
 (defn append!
-  [x y]
-  (set-cdr! (last-pair @x) y)
- x)
+  [atom-x y]
+  (let [x-last-pair (atom (last-pair @atom-x))]
+  (set-cdr! x-last-pair y)
+
+ atom-x))
