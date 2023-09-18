@@ -184,7 +184,7 @@
 
 (def return-first-arg (make-return-first-arg))
 
-;; 3.12
+;; 3.12 DOES NOT WORK
 
 (defn set-cdr!
   [atom-x y]
@@ -206,3 +206,11 @@
   (set-cdr! x-last-pair y)
 
  atom-x))
+
+;; 3.17
+
+;; w = (a, (b, c)) -> count-pairs = 3
+;; x = (a, b)
+;; y = cons x x  -> count-pairs = 4
+;; x = cons y y  -> count-pairs = 7
+;; cycle -> infinite time
